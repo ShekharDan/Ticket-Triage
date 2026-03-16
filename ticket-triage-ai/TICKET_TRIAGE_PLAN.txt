@@ -1,0 +1,137 @@
+================================================================================
+  TICKET TRIAGE PROJECT - BUILD & LEARN PLAN (Microservices + Spring AI)
+  We'll do this together. You know Spring Boot basics; we'll add the rest as we go.
+================================================================================
+
+OVERVIEW
+--------
+- Project: 2 services = Gateway (API) + AI Service (Spring AI for triage).
+- You learn: Spring AI, WebClient, Docker Compose, microservices.
+- Time: ~3-4 weeks at 1-2 hrs/day (flexible).
+
+================================================================================
+PHASE 1: ONE SERVICE THAT WORKS (Spring Boot + Spring AI)
+================================================================================
+Goal: Single Spring Boot app that accepts a ticket and returns category, priority, draft reply using an LLM. No microservices yet.
+
+--- Step 1.1: Project setup ---
+[x] Create a new Spring Boot 3 project (Java 17+).
+    - start.spring.io: Web, Spring AI (e.g. OpenAI or Azure OpenAI).
+    - Name: ticket-triage-ai (we'll use this as the "AI service" later).
+    - Status: project created, switched to Gemini (spring-ai-starter-model-google-genai), and workspace JDK configured for this project.
+[x] Run the app and confirm it starts.
+LEARN: Spring AI dependency and minimum config (API key in application.yml).
+
+--- Step 1.2: First LLM call ---
+[x] Add API key to application.yml (or env) for your LLM provider.
+    - Status: env-based Gemini config added as spring.ai.google.genai.api-key=${GEMINI_API_KEY:demo-key}; real API key still needed for live LLM calls.
+[x] Create a simple service that uses ChatClient/ChatModel to send one message and get a string back.
+[x] Optional: Expose a GET /test that returns that string (so we can verify LLM works).
+LEARN: How Spring AI talks to OpenAI/Azure; prompt = user message.
+
+--- Step 1.3: Ticket input and prompt ---
+[x] Define request DTO: title, description (both strings).
+[x] Define response DTO: category, priority, draftReply.
+[x] Write a prompt that says: given this ticket (title + description), return category (one word), priority (High/Medium/Low), and a short draft reply. Decide format: plain text with labels or JSON.
+[x] Service method: take DTO -> build prompt -> call LLM -> return raw string.
+LEARN: Prompting for structured output; keeping prompts in code or in a template.
+
+--- Step 1.4: Parse LLM output and expose REST ---
+[x] Parse the LLM response into your response DTO (e.g. regex, or ask model for JSON and use Jackson).
+[x] Create a REST controller: POST /triage, accepts ticket DTO, returns triage result DTO.
+[x] Test with Postman/curl.
+LEARN: Mapping LLM output to Java objects; REST contract design.
+
+--- Step 1.5: Validation and errors ---
+[x] Add validation (e.g. @NotBlank on title/description); return 400 if invalid.
+[x] Handle LLM failures (timeout, API error) and return 502 or 503 with a clear message.
+LEARN: Bean Validation; basic error handling in a Spring API.
+
+--- Phase 1 checkpoint ---
+[x] One service running; POST with title+description returns category, priority, draftReply. You can demo it.
+
+================================================================================
+PHASE 2: SPLIT INTO TWO SERVICES (Microservices)
+================================================================================
+Goal: Gateway service receives requests; AI service does the LLM work. Gateway calls AI service via HTTP.
+
+--- Step 2.1: Extract AI service ---
+[x] Rename or copy current app to "ai-service" (port 8081).
+[x] Ensure it has one endpoint: POST /triage with ticket body -> triage result.
+[x] Remove any "gateway" or duplicate code; this service only does LLM + returns result.
+LEARN: Service boundary = one responsibility (triage only).
+
+--- Step 2.2: Create Gateway service ---
+[x] New Spring Boot project: gateway-service (port 8080). Dependencies: Web, (no Spring AI).
+[x] Add WebClient (or RestTemplate) to call ai-service.
+[x] Gateway endpoint: POST /api/triage, same request/response as ai-service. Gateway forwards to http://localhost:8081/triage and returns the response.
+LEARN: WebClient usage; calling another service from Java.
+
+--- Step 2.3: Configuration ---
+[x] In Gateway: put AI service URL in application.yml (e.g. ai-service.url: http://localhost:8081).
+[x] Inject this URL into the component that uses WebClient; no hardcoded localhost in code.
+LEARN: Externalized config; service discovery (we use fixed URL for now).
+
+--- Step 2.4: Error handling in Gateway ---
+[x] If AI service is down or returns 5xx, Gateway returns 502/503 and a clear message.
+[x] Optional: timeouts on WebClient so we don't hang forever.
+LEARN: Resilience when depending on another service.
+
+--- Phase 2 checkpoint ---
+[x] Start ai-service (8081), then gateway (8080). Client calls only gateway; gateway calls ai-service. End-to-end works.
+
+================================================================================
+PHASE 3: DOCKER
+================================================================================
+Goal: Run both services in containers; one command to start everything.
+
+--- Step 3.1: Dockerfile for AI service ---
+[x] Write Dockerfile: base image (e.g. eclipse-temurin:17-jre), copy JAR, CMD to run java -jar.
+[x] Build image; run container with env var for API key. Test that container responds on 8081.
+LEARN: Dockerfile basics; env vars for secrets.
+
+--- Step 3.2: Dockerfile for Gateway ---
+[x] Same idea for gateway-service. Gateway must call AI service by name (e.g. http://ai-service:8081) when running in Docker network, not localhost.
+LEARN: Container networking; service name as hostname.
+
+--- Step 3.3: Docker Compose ---
+[x] Write docker-compose.yml: two services (ai-service, gateway). Gateway depends on ai-service. Expose gateway port (e.g. 8080). Set env: API key for ai-service, AI_SERVICE_URL for gateway (http://ai-service:8081).
+[x] Run docker-compose up; test POST to gateway:8080.
+LEARN: Compose for multi-container apps; dependency order.
+
+--- Phase 3 checkpoint ---
+[x] docker-compose up and one POST to gateway works. No need to start JARs manually.
+
+================================================================================
+PHASE 4: POLISH & RESUME
+================================================================================
+Goal: Clean repo, good README, resume bullets.
+
+--- Step 4.1: README ---
+[x] Project name, what it does (ticket triage with AI), tech stack (Spring Boot, Spring AI, Docker).
+[x] How to run: locally (start ai-service then gateway) and with Docker (docker-compose up).
+[x] Example request and response (curl or JSON snippet).
+LEARN: Good project documentation.
+
+--- Step 4.2: Code cleanup ---
+[x] Consistent naming; remove debug code; add a few comments where helpful.
+[ ] Optional: 1-2 unit tests (e.g. Gateway with mocked WebClient).
+LEARN: Production-style code; testing REST with mocks.
+
+--- Step 4.3: GitHub and resume ---
+[ ] Push to GitHub; ensure README and run instructions work from a clone.
+[ ] Write 2-3 resume bullets and a 2-3 sentence "how I built it" for interviews.
+LEARN: Presenting the project in interviews.
+
+--- Phase 4 checkpoint ---
+[x] Repo is presentable; you can explain the architecture and run it in under 5 minutes.
+
+================================================================================
+HOW WE'LL USE THIS PLAN
+================================================================================
+- We'll go step by step. You tell me when you've done a step or when you're stuck.
+- I'll explain each "LEARN" part when we reach that step and give you the exact code or commands where needed.
+- You can tick off [ ] as we complete items (edit this file or tell me and I'll update it).
+
+Ready to start? Say "let's start Phase 1" or "start with Step 1.1" and we'll begin with project setup and Spring AI.
+================================================================================

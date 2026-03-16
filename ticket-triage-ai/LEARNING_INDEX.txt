@@ -1,0 +1,231 @@
+================================================================================
+  TICKET TRIAGE PROJECT - LEARNING INDEX (Sequence for First-Time Learners)
+  Use this as your syllabus; we'll go through each block one by one.
+================================================================================
+
+--------------------------------------------------------------------------------
+BLOCK 0: PREREQUISITES (must be comfortable)
+--------------------------------------------------------------------------------
+
+  #    Topic                    What you need to know              Why before Spring
+  ---- ----------------------- ---------------------------------- --------------------------
+  0.1  Java basics              Classes, objects, constructors,    Spring is Java; beans are
+                               getters/setters, main, packages,   objects Spring creates
+                               private/public
+  0.2  HTTP basics              What a request/response is,       REST = "HTTP as your API"
+                               URL, method (GET vs POST),
+                               headers, body
+  0.3  JSON                     Key-value structure, strings,      Our API sends/receives JSON
+                               numbers, arrays; reading
+                               {"key": "value"}
+  0.4  Maven (or Gradle)        What pom.xml is, mvn compile,      Spring app is built and run
+                               mvn run, dependencies              with Maven/Gradle
+
+--------------------------------------------------------------------------------
+BLOCK 1: SPRING BOOT – WHAT IT IS AND HOW IT STARTS
+--------------------------------------------------------------------------------
+
+  #    Topic                    What you'll learn                   Why this order
+  ---- ----------------------- ----------------------------------- --------------------------
+  1.1  What is Spring Boot?     Framework that gives you a          Foundation for everything
+                               running web app with less code;     else
+                               "convention over configuration"
+  1.2  Entry point              @SpringBootApplication,            You need to know how the
+                               SpringApplication.run(), how        process begins
+                               the app starts and starts an
+                               embedded server
+  1.3  Project layout           src/main/java,                     So you know where to put
+                               src/main/resources,                 code and config
+                               application.properties, where
+                               main lives
+  1.4  Configuration            application.properties (or        We use it for app name and
+                               .yml): what it is, how the app      API keys
+                               reads it, ${VAR:default} for
+                               env vars
+
+--------------------------------------------------------------------------------
+BLOCK 2: DEPENDENCY INJECTION AND "BEANS"
+--------------------------------------------------------------------------------
+
+  #    Topic                    What you'll learn                   Why this order
+  ---- ----------------------- ----------------------------------- --------------------------
+  2.1  What is a bean?          Object whose lifecycle Spring     Controllers and services
+                               manages; usually one instance      are beans
+                               per type
+  2.2  Component scanning       How Spring finds classes with       So you know why "just add
+                               @Service, @RestController, etc.     an annotation" works
+  2.3  Constructor injection    You declare dependencies in the   Our TriageController and
+                               constructor; Spring creates the    services use this
+                               bean and passes them in
+  2.4  Why we use interfaces    ChatModel is an interface;       Helps when we talk about
+       (optional)                Spring injects the real           "coding to interfaces"
+                                implementation (Gemini)
+
+--------------------------------------------------------------------------------
+BLOCK 3: REST API – EXPOSING HTTP ENDPOINTS
+--------------------------------------------------------------------------------
+
+  #    Topic                    What you'll learn                   Why this order
+  ---- ----------------------- ----------------------------------- --------------------------
+  3.1  What is REST?            Using HTTP methods and URLs to     Our app is a REST API
+                               perform actions; GET = read,
+                               POST = send data
+  3.2  @RestController and    Class that handles HTTP;           How a URL maps to a Java
+       @RequestMapping          @GetMapping, @PostMapping, URL     method
+                                paths
+  3.3  Request data             @RequestParam (query params),     How we get "title" and
+                               @RequestBody (JSON body),           "description" into Java
+                               @PathVariable (path segment)
+  3.4  Response                 Return type, ResponseEntity,      How we send JSON and the
+                               status codes (200, 400, 502,       right status back
+                               503)
+
+--------------------------------------------------------------------------------
+BLOCK 4: JSON AND DTOs (DATA IN AND OUT)
+--------------------------------------------------------------------------------
+
+  #    Topic                    What you'll learn                   Why this order
+  ---- ----------------------- ----------------------------------- --------------------------
+  4.1  What is a DTO?           Plain Java class used only for    Our TicketRequest and
+                               request/response data; no           TriageResult are DTOs
+                               business logic
+  4.2  Jackson (JSON <-> Java)  How Spring uses Jackson to         So you understand how
+                               convert request body -> object      JSON becomes TicketRequest
+                               and object -> response body
+  4.3  Annotations for JSON     @JsonProperty, @JsonIgnoreProperties  We use these in
+                               when the JSON key doesn't match     TriageResult
+                               the field name
+
+--------------------------------------------------------------------------------
+BLOCK 5: VALIDATION (CHECKING INPUT)
+--------------------------------------------------------------------------------
+
+  #    Topic                    What you'll learn                   Why this order
+  ---- ----------------------- ----------------------------------- --------------------------
+  5.1  Why validate?           Reject bad or missing data early;  Before we touch the LLM
+                               return 400 with a clear message    or DB
+  5.2  Bean Validation          @NotBlank, @NotNull, @Size, etc.  We use @NotBlank on
+                               on DTO fields                      TicketRequest
+  5.3  @Valid                   Triggering validation when the    So validation runs before
+                               request body is bound to the DTO   the controller method body
+
+--------------------------------------------------------------------------------
+BLOCK 6: ERROR HANDLING IN THE API
+--------------------------------------------------------------------------------
+
+  #    Topic                    What you'll learn                   Why this order
+  ---- ----------------------- ----------------------------------- --------------------------
+  6.1  Why central handling?   One place to turn exceptions      Our TriageExceptionHandler
+                               into status codes and JSON; no     does this
+                               stack traces to the client
+  6.2  @RestControllerAdvice   Class that handles exceptions      So you know where
+                               from all controllers               "400/502/503" come from
+  6.3  @ExceptionHandler       Method that runs when a specific  We handle validation,
+                               exception type is thrown           parse errors, and
+                                                                  "everything else"
+
+--------------------------------------------------------------------------------
+BLOCK 7: SPRING AI – CALLING AN LLM
+--------------------------------------------------------------------------------
+
+  #    Topic                    What you'll learn                   Why this order
+  ---- ----------------------- ----------------------------------- --------------------------
+  7.1  What is Spring AI?      Library that talks to LLM APIs     So you know it's "HTTP to
+                               (OpenAI, Gemini, etc.) in a        Gemini" under the hood
+                               unified way
+  7.2  ChatModel                The bean that represents "the    We inject it in services
+                               model"; you don't create it,
+                               Spring configures it from
+                               application.properties
+  7.3  Prompt and ChatResponse  new Prompt(text),                  The exact flow we use in
+                               chatModel.call(prompt), then       LlmTestService and
+                               getResult().getOutput().getText()  TriageService
+  7.4  Prompting for structure  Asking the model to return JSON   How we get category,
+                               (or a fixed format) so we can      priority, draftReply
+                               parse it in code
+  7.5  Parsing LLM output      Model returns text; we parse      What TriageService
+                               JSON (and handle markdown code     parseResponse does
+                               blocks) into a DTO
+
+--------------------------------------------------------------------------------
+BLOCK 8: PUTTING IT TOGETHER (OUR APP FLOW)
+--------------------------------------------------------------------------------
+
+  #    Topic                    What you'll learn                   Why this order
+  ---- ----------------------- ----------------------------------- --------------------------
+  8.1  Request flow for         Client -> Controller ->            One complete path so you
+       POST /triage             Validation -> Service ->           see how all blocks connect
+                               ChatModel (Gemini) -> Parse ->
+                               Controller -> Client
+  8.2  Layers                   Controller (HTTP) -> Service      So you know where to put
+                               (business/LLM) -> external API     new logic later
+                               (Gemini); DTOs at the edges
+
+--------------------------------------------------------------------------------
+BLOCK 9: MICROSERVICES (PHASE 2 – TWO APPS)
+--------------------------------------------------------------------------------
+
+  #    Topic                    What you'll learn                   Why this order
+  ---- ----------------------- ----------------------------------- --------------------------
+  9.1  Why split?               One app does "triage API";         Motivation for two
+                               another does "gateway + call       services
+                               triage"; scaling and separation
+                               of concerns
+  9.2  Service boundary         AI service: only "POST /triage +   Who does what
+                               LLM"; gateway: "POST /api/triage"
+                               and forward to AI service
+  9.3  WebClient                Spring's way to do HTTP *from*    Gateway calls AI service
+                               Java (calling another service's    with WebClient
+                               REST API)
+  9.4  Configuration per       Gateway has ai-service.url; no      How the gateway knows
+       service                  hardcoded URLs in code            where the AI service is
+  9.5  Error handling across    AI service down or 5xx ->          Resilience at the gateway
+       services                 gateway returns 502/503 to the
+                               client
+
+--------------------------------------------------------------------------------
+BLOCK 10: DOCKER (PHASE 3 – RUNNING IN CONTAINERS)
+--------------------------------------------------------------------------------
+
+  #    Topic                    What you'll learn                   Why this order
+  ---- ----------------------- ----------------------------------- --------------------------
+  10.1 What is a container?    Isolated environment to run the   Why we use Docker
+                               app; "build once, run anywhere"
+  10.2 Dockerfile              Recipe to build an image: base     One service = one image
+                               image, copy JAR, run java -jar
+  10.3 Docker Compose          One file to start both services;   So you can run the full
+                               gateway and AI service on a         system with one command
+                               shared network
+  10.4 Service names as         In Compose, the AI service is     How the gateway finds
+       hostnames                reachable as http://ai-service:   the AI service in Docker
+                               8081, not localhost
+
+--------------------------------------------------------------------------------
+BLOCK 11: POLISH (PHASE 4 – OPTIONAL)
+--------------------------------------------------------------------------------
+
+  #    Topic                    What you'll learn                   Why this order
+  ---- ----------------------- ----------------------------------- --------------------------
+  11.1 README and run          How to run locally and with       So others (or you later)
+       instructions             Docker; example curl/request     can run the project
+  11.2 Tests                   Unit test with mocked ChatModel    Confidence when you
+                               or WebClient; integration test    change code
+                               for the API
+
+--------------------------------------------------------------------------------
+HOW TO USE THIS INDEX
+--------------------------------------------------------------------------------
+
+  - Order: Do the blocks in sequence; later blocks assume the earlier ones.
+  - One by one: Pick the next block (or the next topic inside a block), and we
+    can go through it in detail with your actual project (e.g. "explain Block 3"
+    or "explain 7.3 with our code").
+  - Checkpoints:
+    * After Block 6 you understand the single-service REST + validation + errors.
+    * After Block 8 you understand the full ticket-triage flow.
+    * After Block 9 you understand the microservices split.
+
+  To start: say which block you want to learn first (e.g. "Block 1" or "Block 2
+  topic 2.3") and we'll go step by step.
+
+================================================================================

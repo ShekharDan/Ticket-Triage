@@ -1,0 +1,28 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-TicketTriageAiApplication<ticket-triage-ai>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.example.ticket_triage_ai.TicketTriageAiApplication",
+            "projectName": "ticket-triage-ai",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env",
+            "env": {
+                "JAVA_HOME": "${env:JAVA_HOME}"
+            }
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-GatewayServiceApplication<gateway-service>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.example.gatewayservice.GatewayServiceApplication",
+            "projectName": "gateway-service",
+            "env": {
+                "JAVA_HOME": "${env:JAVA_HOME}"
+            }
+        }
+    ]
+}

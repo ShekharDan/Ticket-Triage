@@ -1,0 +1,26 @@
+services:
+  ai-service:
+    build: .
+    container_name: ai-service
+    ports:
+      - "8081:8081"
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY:demo-key}
+    networks:
+      - triage-net
+
+  gateway:
+    build: ../gateway-service
+    container_name: gateway
+    ports:
+      - "8080:8080"
+    environment:
+      - AI_SERVICE_URL=http://ai-service:8081
+    depends_on:
+      - ai-service
+    networks:
+      - triage-net
+
+networks:
+  triage-net:
+    driver: bridge
