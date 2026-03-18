@@ -1,0 +1,32 @@
+# IDEs and Editors
+.idea/
+*.iws
+*.iml
+*.ipr
+.vscode/
+
+# Environment Variables / Secrets
+.env
+*.env
+.env.*
+!.env.example
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Build output directories (if building at root, but they are inside sub-modules, though good to have globally)
+target/
+*.jar
+*.war
+*.ear
+
+# Logs
+logs/
+*.log
+
