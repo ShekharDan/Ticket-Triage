@@ -7,7 +7,7 @@ services:
     ports:
       - "8081:8081"
     environment:
-      - GEMINI_API_KEY=${GEMINI_API_KEY:demo-key}
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-demo-key}
     networks:
       - triage-net
 
